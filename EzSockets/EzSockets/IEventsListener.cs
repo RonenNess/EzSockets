@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Lords.Common.Network
+namespace EzSockets
 {
     /// <summary>
     /// How to handle exceptions when raised.

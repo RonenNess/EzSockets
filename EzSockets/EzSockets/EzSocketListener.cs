@@ -1,9 +1,8 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace Lords.Common.Network
+namespace EzSockets
 {
     /// <summary>
     /// Listen and accept new connections.

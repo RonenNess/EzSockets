@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Lords.Common.Network
+namespace EzSockets
 {
     /// <summary>
     /// Class to handle different events from sockets.
