@@ -141,6 +141,7 @@ namespace EzSockets_Tester
                 _server.StopListening();
                 startServerBtn.Text = "Start Server";
                 portInput.ReadOnly = false;
+                listeningLabel.Visible = false;
             }
             // if not listening, start server
             else
@@ -148,6 +149,7 @@ namespace EzSockets_Tester
                 _server.ListenAsync(System.Int32.Parse(portInput.Text));
                 startServerBtn.Text = "Stop Server";
                 portInput.ReadOnly = true;
+                listeningLabel.Visible = true;
             }
         }
 

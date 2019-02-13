@@ -215,7 +215,7 @@ namespace EzSockets
         /// </summary>
         public virtual void SendRaw(string data)
         {
-            byte[] byteData = Encoding.UTF8.GetBytes(data);
+            byte[] byteData = StringToBytes(data);
             SendRaw(byteData);
         }
 
@@ -242,7 +242,7 @@ namespace EzSockets
         /// </summary>
         public virtual async Task SendRawAsync(string data)
         {
-            byte[] byteData = Encoding.UTF8.GetBytes(data);
+            byte[] byteData = StringToBytes(data);
             await SendRawAsync(byteData);
         }
 
@@ -276,7 +276,7 @@ namespace EzSockets
         {
             byte[] buffer;
             ReadRaw(out buffer);
-            data = Encoding.UTF8.GetString(buffer);
+            data = BytesToString(buffer);
             return data.Length;
         }
 
@@ -309,7 +309,7 @@ namespace EzSockets
         public virtual async Task<string> ReadRawAsyncStr()
         {
             byte[] buff = await ReadRawAsync();
-            return Encoding.UTF8.GetString(buff);
+            return BytesToString(buff);
         }
 
         /// <summary>
@@ -391,7 +391,7 @@ namespace EzSockets
         /// </summary>
         public virtual void SendMessage(string msg)
         {
-            SendMessage(Encoding.UTF8.GetBytes(msg));
+            SendMessage(StringToBytes(msg));
         }
 
         /// <summary>
@@ -422,7 +422,7 @@ namespace EzSockets
         /// </summary>
         public virtual async Task SendMessageAsync(string msg)
         {
-            await SendMessageAsync(Encoding.UTF8.GetBytes(msg));
+            await SendMessageAsync(StringToBytes(msg));
         }
 
         #endregion
@@ -575,7 +575,7 @@ namespace EzSockets
         public virtual string ReadMessageStr()
         {
             byte[] buff = ReadMessage();
-            return Encoding.Unicode.GetString(buff, 0, buff.Length);
+            return BytesToString(buff);
         }
 
         /// <summary>
@@ -626,7 +626,7 @@ namespace EzSockets
         {
             // convert to string and return
             byte[] buff = await ReadMessageAsync();
-            return Encoding.Unicode.GetString(buff, 0, buff.Length);
+            return BytesToString(buff);
         }
 
         /// <summary>
