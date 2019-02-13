@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+	<id>EzSockets</id>
+	<version>0.1.0.0</version>
+	<authors>Ronen Ness</authors>
+	<owners>RonenNess</owners>
+	<title>EzSockets</title>
+	<summary>Easy TCP sockets with message framing for C#</summary>
+	<licenseUrl>https://github.com/RonenNess/EzSockets/blob/master/LICENSE</licenseUrl>
+	<projectUrl>https://github.com/RonenNess/EzSockets</projectUrl>
+	<copyright>Ronen Ness</copyright>
+	<requireLicenseAcceptance>false</requireLicenseAcceptance>
+	<releaseNotes></releaseNotes>
+	<description>EzSockets provides a slightly improved API for C# TCP sockets.</description>
+	<tags>tcp sockets server network messages events</tags>
+	<dependencies>
+	</dependencies>
+  </metadata>
+  <files>
+	<file src="README.md" target="" />
+	<file src="EzSockets\EzSockets\bin\Release\netstandard2.0\EzSockets.dll" target="lib\EzSockets\netstandard2.0\EzSockets.dll"/>
+  </files>
+</package>

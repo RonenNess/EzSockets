@@ -23,24 +23,24 @@ EzSockets provides a slightly improved API for C# TCP sockets:
 
 Basically it implements the bit of tedious work that C# sockets (which are already pretty great on their own) force you to do.
 
-## How it works
+## How you use it
 
-1. Implement your event listener class for client and server side (ie your logic).
+1. Implement event listeners for client and server side (where you put your logic).
 2. On server side: create listener to accept connections from port.
 3. On client side: create sockets to connect to server.
 
-That's pretty much it. You can use *EzSockets* just like you would with regular TCP client, but the real fun is using them from the event handlers, sort of like with socket.io.
+That's pretty much it. You can use *EzSockets* just like you would with regular TCP client, but the real fun is using them from the events API, sort of like with socket.io.
 
-### Messages Vs Raw Data
+### Framed Messages Vs Raw Data
 
 Raw API is the basic sockets API that allow you to send streams of bytes to the other side (from byte array or string). 
-The problem with this method is that it has no framing and if you send two different messages in a row (for example "hello " and "world") the receiving side might get it in a single read, as "hello world" (not always desired).
+The problem with this method is that it has no framing and if you send two different messages in a row (for example "hello " and "world") the receiving side might get it in a single read, as "hello world", which is not always desired..
 
-The *Messages* API allow you to send and read whole messages without knowing their size. With this API if the remote device sent you "hello " and "world", you will get two messages containing "hello " and "world" separately.
-Messages API comes with another feature, StartReadingMessages(), which will make a socket listen to incoming traffic and generate 'Message read' events for every message arrived.
+The *Framed Messages* API allow you to send and read whole messages without knowing their size. With this API if the remote device sent you "hello " and then "world", you will get two messages containing "hello " and "world" separately.
+Messages API comes with another feature, StartReadingMessages(), which will make a socket listen to incoming traffic and generate 'Message read' events for every new message arrived.
 
-Note: mixing raw data with messages is not recommended and can cause problems. 
-For example if you send raw data of 5 bytes and then a message, and later on the other side you only read 4 bytes with the raw API and then immediately try to read the message, the result would be that the fifth byte from the raw data will infiltrate into the message buffer and corrupte it.
+Note: mixing raw data with framed messages is not recommended and can cause unexpected behavior, if you don't read your raw data properly on the receiving end. 
+
 
 ### Usage - Server Side Example
 
@@ -50,22 +50,27 @@ The following is a simple 'echo' server that also send "hello!" on connection:
 // create new server with default event listener and add some events
 EzSocketListener server = new EzSocketListener(new EzEventsListener()
 {
-	OnNewConnectionHandler = (EzSocket socket) => {
+	OnNewConnectionHandler = (EzSocket socket) => 
+	{
 		Console.WriteLine("Connected!");
 		socket.SendMessage("hello!");
 		socket.StartReadingMessages(); // <-- this will make the new socket listen to incoming messages and trigger events.
 	},
-	OnConnectionClosedHandler = (EzSocket socket) => {
+	OnConnectionClosedHandler = (EzSocket socket) => 
+	{
 		Console.WriteLine("Connection Closed!");
 	},
-	OnMessageReadHandler = (EzSocket socket, byte[] data) => {
+	OnMessageReadHandler = (EzSocket socket, byte[] data) => 
+	{
 		Console.WriteLine("Read message!");
 		socket.SendMessage(data);
 	},
-	OnMessageSendHandler = (EzSocket socket, byte[] data) => {
+	OnMessageSendHandler = (EzSocket socket, byte[] data) => 
+	{
 		Console.WriteLine("Sent message!");
 	},
-	OnExceptionHandler = (EzSocket socket, Exception ex) => {
+	OnExceptionHandler = (EzSocket socket, Exception ex) => 
+	{
 		Console.WriteLine("Error! " + ex.ToString());
 		return ExceptionHandlerResponse.CloseSocket;
 	}
@@ -92,7 +97,8 @@ var socket = new EzSocket(null, 8080, new EzEventsListener()
 	{
 		Console.WriteLine("Read message!");
 	},
-	OnMessageSendHandler = (EzSocket sock, byte[] data) => {
+	OnMessageSendHandler = (EzSocket sock, byte[] data) => 
+	{
 		Console.WriteLine("Sent Data!");
 	},
 });
@@ -104,10 +110,11 @@ socket.StartReadingMessages();
 socket.SendMessage("How are you today?");
 ```
 
-### Implemeting Listener As Class
+### Implemeting Events Listener As Class
 
-In the examples above we used the generic `EzEventsListener` object with attached anonymous functions. 
-If you want to have a 'cleaner' solution with your own server manager class, instead of using delegates you can implement your own listener by implementing the ```IEzEventsListener``` API, or you can inherit from ```EzEventsListener``` and just override the handlers that are interesting to you.
+In the examples above we used the generic `EzEventsListener` object with attached functions. 
+
+If you want to have a 'cleaner' solution with your own server manager class you can create your own listener by implementing the ```IEzEventsListener``` API, or you can inherit from ```EzEventsListener``` and override the handlers that are interesting for you (in the second option you can enjoy both callbacks you can attach and class methods to handle events).
 
 ### Change Encoding
 
