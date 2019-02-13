@@ -99,7 +99,7 @@ namespace EzSockets
         /// Called on exceptions.
         /// </summary>
         /// <returns>How to handle the exception.</returns>
-        public Func<EzSocket, ExceptionHandlerResponse> OnExceptionHandler;
+        public Func<EzSocket, Exception, ExceptionHandlerResponse> OnExceptionHandler;
 
         /// <summary>
         /// Trigger the OnException event.
@@ -109,7 +109,7 @@ namespace EzSockets
         public virtual ExceptionHandlerResponse OnException(EzSocket socket, Exception exception)
         {
             if (OnExceptionHandler == null) { return ExceptionHandlerResponse.CloseSocket; }
-            return OnExceptionHandler(socket);
+            return OnExceptionHandler(socket, exception);
         }
     }
 }

@@ -25,12 +25,17 @@ namespace EzSockets
         public TcpClient Client { get; private set; }
 
         /// <summary>
-        /// Socket session id.
+        /// Unique socket id.
         /// </summary>
-        public long SessionId { get; private set; }
+        public long SocketId { get; private set; }
 
         // next session id
-        private static long _nextSessionId = 0;
+        private static long _nextSocketId = 0;
+
+        /// <summary>
+        /// Get if socket is connected.
+        /// </summary>
+        public bool Connected { get { return Client.Connected; } }
 
         /// <summary>
         /// The network stream associated with this socket.
@@ -96,7 +101,7 @@ namespace EzSockets
             try
             {
                 // get session id
-                SessionId = Interlocked.Increment(ref _nextSessionId);
+                SocketId = Interlocked.Increment(ref _nextSocketId);
 
                 // create socket and connect
                 Client = new TcpClient();
@@ -125,7 +130,7 @@ namespace EzSockets
             try
             {
                 // init socket
-                SessionId = Interlocked.Increment(ref _nextSessionId);
+                SocketId = Interlocked.Increment(ref _nextSocketId);
                 Client = socket;
                 Stream = Client.GetStream();
             }
@@ -463,6 +468,7 @@ namespace EzSockets
         {
             // convert the size we read into int
             // could optionally call BitConverter.ToInt32(sizeinfo, 0);
+            if (arr == null) { return 0; }
             int ret = 0;
             ret |= arr[0];
             ret |= (((int)arr[1]) << 8);
@@ -504,6 +510,13 @@ namespace EzSockets
                 if (messagesize > 1024 * 10)
                 {
                     throw new Exception("Message buffer too big!");
+                }
+
+                // no message? usually happens while disconnecting..
+                if (messagesize == 0)
+                {
+                    Close();
+                    return null;
                 }
 
                 // read message and return
@@ -549,6 +562,13 @@ namespace EzSockets
                     throw new Exception("Message buffer too big!");
                 }
 
+                // no message? usually happens while disconnecting..
+                if (messagesize == 0)
+                {
+                    Close();
+                    return null;
+                }
+
                 // read the message and return
                 data = await ReadExactlyAsync(messagesize);
             }
@@ -580,8 +600,15 @@ namespace EzSockets
         /// </summary>
         public async void StartReadingMessages()
         {
+            // make sure connected
+            if (!Connected)
+            {
+                throw new Exception("Cannot start reading loop while not connected!");
+            }
+
+            // start reading loop
             _readingLoop = true;
-            while (_readingLoop)
+            while (_readingLoop && Connected)
             {
                 try
                 {
@@ -592,6 +619,12 @@ namespace EzSockets
                     HandleException(e);
                     _readingLoop = false;
                 }
+            }
+
+            // was closed?
+            if (!Connected)
+            {
+                Close();
             }
         }
 

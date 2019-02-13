@@ -15,12 +15,17 @@ namespace EzSockets
         public IEzEventsListener EventsListener { get; private set; }
 
         // listener to bind and accept connections on port
-        static TcpListener _listener;
+        TcpListener _listener;
 
         /// <summary>
         /// Get if this listener is currently listening.
         /// </summary>
         public bool IsListening { get; private set; }
+
+        /// <summary>
+        /// Port we are currently listening to (0 if not listening).
+        /// </summary>
+        public int Port { get; private set; }
 
         /// <summary>
         /// Create the sockets listener.
@@ -32,12 +37,26 @@ namespace EzSockets
         }
 
         /// <summary>
+        /// Close socket listener.
+        /// </summary>
+        ~EzSocketListener()
+        {
+            if (_listener != null)
+            {
+                _listener.Stop();
+                _listener.Server.Close();
+                _listener = null;
+            }
+        }
+
+        /// <summary>
         /// Listen on port and accept connections.
         /// </summary>
         /// <param name="port">Port to listen to.</param>
         public void Listen(int port)
         {
             // create listener and start
+            Port = port;
             _listener = new TcpListener(IPAddress.Any, port);
             _listener.Start();
 
@@ -52,7 +71,9 @@ namespace EzSockets
             }
 
             // stop listening and delete listener
+            Port = 0;
             _listener.Stop();
+            _listener.Server.Close();
             _listener = null;
         }
 
