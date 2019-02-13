@@ -44,12 +44,14 @@
             this.NewConnectionBtn = new System.Windows.Forms.Button();
             this.ClientSocketsList = new System.Windows.Forms.ListBox();
             this.listeningLabel = new System.Windows.Forms.Label();
+            this.showActiveSocket = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.showActiveSocket);
             this.groupBox1.Controls.Add(this.listeningLabel);
             this.groupBox1.Controls.Add(this.ServerSendMsgBtn);
             this.groupBox1.Controls.Add(this.ServerSendMsgText);
@@ -116,7 +118,7 @@
             this.serverOutTextBox.Multiline = true;
             this.serverOutTextBox.Name = "serverOutTextBox";
             this.serverOutTextBox.ReadOnly = true;
-            this.serverOutTextBox.Size = new System.Drawing.Size(308, 320);
+            this.serverOutTextBox.Size = new System.Drawing.Size(308, 303);
             this.serverOutTextBox.TabIndex = 0;
             // 
             // groupBox2
@@ -209,6 +211,15 @@
             this.listeningLabel.Text = "Listening..";
             this.listeningLabel.Visible = false;
             // 
+            // showActiveSocket
+            // 
+            this.showActiveSocket.AutoSize = true;
+            this.showActiveSocket.Location = new System.Drawing.Point(6, 379);
+            this.showActiveSocket.Name = "showActiveSocket";
+            this.showActiveSocket.Size = new System.Drawing.Size(152, 13);
+            this.showActiveSocket.TabIndex = 5;
+            this.showActiveSocket.Text = "No active socket to send from.";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -247,6 +258,7 @@
         private System.Windows.Forms.Button ClientSendMsgBtn;
         private System.Windows.Forms.TextBox ClientSendMsgText;
         private System.Windows.Forms.Label listeningLabel;
+        private System.Windows.Forms.Label showActiveSocket;
     }
 }
 

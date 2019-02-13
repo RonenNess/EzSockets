@@ -29,6 +29,7 @@ namespace EzSockets_Tester
                 },
                 OnConnectionClosedHandler = (EzSocket socket) => {
                     WriteSocketOutputServerSide(socket, "Closed!");
+                    if (_targetSocket == socket) { PickTargetSocket(null); }
                 },
                 OnMessageReadHandler = (EzSocket socket, byte[] data) => {
                     WriteSocketOutputServerSide(socket, "Read: '" + System.Text.Encoding.UTF8.GetString(data) + "'.");
@@ -72,7 +73,7 @@ namespace EzSockets_Tester
             serverOutTextBox.Invoke(new MethodInvoker(
                 delegate
                 {
-                    serverOutTextBox.Text += "[Client " + socket.SocketId + "] " + msg + Environment.NewLine;
+                    serverOutTextBox.Text += "[Socket " + socket.SocketId + "] " + msg + Environment.NewLine;
                 })
             );
         }
@@ -83,7 +84,7 @@ namespace EzSockets_Tester
             ClientOutputBox.Invoke(new MethodInvoker(
                 delegate
                 {
-                    ClientOutputBox.Text += "[Server " + socket.SocketId + "] " + msg + Environment.NewLine;
+                    ClientOutputBox.Text += "[Socket " + socket.SocketId + "] " + msg + Environment.NewLine;
                 })
             );
         }
@@ -103,10 +104,17 @@ namespace EzSockets_Tester
         private void PickTargetSocket(EzSocket socket)
         {
             _targetSocket = socket;
-            ServerSendMsgBtn.Invoke(new MethodInvoker(
+            showActiveSocket.Invoke(new MethodInvoker(
                 delegate
                 {
-                    ServerSendMsgBtn.Text += "Send to " + socket.SocketId;
+                    if (_targetSocket != null)
+                    {
+                        showActiveSocket.Text = "Send from socket: " + socket.SocketId;
+                    }
+                    else
+                    {
+                        showActiveSocket.Text = "No active socket to send from.";
+                    }
                 })
             );
         }
