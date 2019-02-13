@@ -88,6 +88,17 @@ namespace EzSockets_Tester
             );
         }
 
+        // write output for a socket - on client side
+        private void WriteSocketOutputClientSide(string msg)
+        {
+            ClientOutputBox.Invoke(new MethodInvoker(
+                delegate
+                {
+                    ClientOutputBox.Text += msg + Environment.NewLine;
+                })
+            );
+        }
+
         // select target socket
         private void PickTargetSocket(EzSocket socket)
         {
@@ -180,6 +191,7 @@ namespace EzSockets_Tester
         {
             get
             {
+                if (ClientSocketsList.Text.Length == 0) { return null; }
                 var id = ClientSocketsList.Text.Split(' ')[1];
                 int idInt;
                 if (Int32.TryParse(id, out idInt))
@@ -206,7 +218,14 @@ namespace EzSockets_Tester
             var socket = SelectedClientSocket;
             if (socket != null)
             {
-                socket.SendMessage(ClientSendMsgText.Text);
+                if (ClientSendMsgText.Text.Length > 0)
+                {
+                    socket.SendMessage(ClientSendMsgText.Text);
+                }
+            }
+            else
+            {
+                WriteSocketOutputClientSide("[PLEASE SELECT SOCKET TO SEND FROM]");
             }
         }
     }

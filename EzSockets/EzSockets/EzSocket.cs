@@ -33,9 +33,37 @@ namespace EzSockets
         private static long _nextSocketId = 0;
 
         /// <summary>
+        /// Function used to convert string to bytes array.
+        /// Override this if you need different encoding.
+        /// </summary>
+        public static Func<string, byte[]> StringToBytes = (string str) =>
+        {
+            return Encoding.UTF8.GetBytes(str);
+        };
+
+        /// <summary>
+        /// Function used to convert bytes array to string.
+        /// Override this if you need different encoding.
+        /// </summary>
+        public static Func<byte[], string> BytesToString = (byte[] bytes) =>
+        {
+            return Encoding.UTF8.GetString(bytes);
+        };
+
+        /// <summary>
         /// Get if socket is connected.
         /// </summary>
         public bool Connected { get { return Client.Connected; } }
+
+        /// <summary>
+        /// Get if we currently have available for reading.
+        /// </summary>
+        public bool DataAvailable { get { return Stream.DataAvailable; } }
+
+        /// <summary>
+        /// Get how many bytes we currently have available for reading.
+        /// </summary>
+        public long AvailableDataLength { get { return Stream.Length; } }
 
         /// <summary>
         /// The network stream associated with this socket.
@@ -185,16 +213,16 @@ namespace EzSockets
         /// <summary>
         /// Send data to remote device.
         /// </summary>
-        public virtual void Send(string data)
+        public virtual void SendRaw(string data)
         {
             byte[] byteData = Encoding.UTF8.GetBytes(data);
-            Send(byteData);
+            SendRaw(byteData);
         }
 
         /// <summary>
         /// Send data to remote device.
         /// </summary>
-        public virtual void Send(byte[] byteData)
+        public virtual void SendRaw(byte[] byteData)
         {
             try
             {
@@ -212,16 +240,16 @@ namespace EzSockets
         /// <summary>
         /// Send data to remote device.
         /// </summary>
-        public virtual async Task SendAsync(string data)
+        public virtual async Task SendRawAsync(string data)
         {
             byte[] byteData = Encoding.UTF8.GetBytes(data);
-            await SendAsync(byteData);
+            await SendRawAsync(byteData);
         }
 
         /// <summary>
         /// Send data to remote device.
         /// </summary>
-        public virtual async Task SendAsync(byte[] byteData)
+        public virtual async Task SendRawAsync(byte[] byteData)
         {
             try
             {
@@ -244,10 +272,10 @@ namespace EzSockets
         /// Read data from remote device.
         /// </summary>
         /// <param name="data">Data received, as string.</param>
-        public virtual int Read(out string data)
+        public virtual int ReadRaw(out string data)
         {
             byte[] buffer;
-            Read(out buffer);
+            ReadRaw(out buffer);
             data = Encoding.UTF8.GetString(buffer);
             return data.Length;
         }
@@ -256,7 +284,7 @@ namespace EzSockets
         /// Read data from remote device.
         /// </summary>
         /// <param name="byteData">Data received, as bytes array.</param>
-        public virtual int Read(out byte[] byteData)
+        public virtual int ReadRaw(out byte[] byteData)
         {
             try
             {
@@ -278,16 +306,16 @@ namespace EzSockets
         /// <summary>
         /// Read data from remote device.
         /// </summary>
-        public virtual async Task<string> ReadAsyncStr()
+        public virtual async Task<string> ReadRawAsyncStr()
         {
-            byte[] buff = await ReadAsync();
+            byte[] buff = await ReadRawAsync();
             return Encoding.UTF8.GetString(buff);
         }
 
         /// <summary>
         /// Read data from remote device.
         /// </summary>
-        public virtual async Task<byte[]> ReadAsync()
+        public virtual async Task<byte[]> ReadRawAsync()
         {
             byte[] byteData;
             try
@@ -311,6 +339,31 @@ namespace EzSockets
         #region Send Framed Messages
 
         /// <summary>
+        /// Encode buffer with its length into a single byte array.
+        /// Result will be 4 bytes of buffer size + buffer.
+        /// </summary>
+        private void EncodeBufferAndSize(byte[] data, out byte[] msgBuffer)
+        {
+            // sanity check
+            if (data.Length == 0)
+            {
+                throw new Exception("Cannot encode empty buffer!");
+            }
+
+            // to encode message size
+            msgBuffer = new byte[4 + data.Length];
+
+            // could optionally call BitConverter.GetBytes(data.length);
+            msgBuffer[0] = (byte)data.Length;
+            msgBuffer[1] = (byte)(data.Length >> 8);
+            msgBuffer[2] = (byte)(data.Length >> 16);
+            msgBuffer[3] = (byte)(data.Length >> 24);
+
+            // merge and send size + data
+            Buffer.BlockCopy(data, 0, msgBuffer, 4, data.Length);
+        }
+
+        /// <summary>
         /// Send a single message with size, to be read as whole from the other side.
         /// </summary>
         public virtual void SendMessage(byte[] data)
@@ -318,19 +371,9 @@ namespace EzSockets
             byte[] msgBuffer;
             try
             {
-                // to encode message size
-                msgBuffer = new byte[4 + data.Length];
-
-                // could optionally call BitConverter.GetBytes(data.length);
-                msgBuffer[0] = (byte)data.Length;
-                msgBuffer[1] = (byte)(data.Length >> 8);
-                msgBuffer[2] = (byte)(data.Length >> 16);
-                msgBuffer[3] = (byte)(data.Length >> 24);
-                _eventsListener.OnDataSend(this, data);
-
-                // merge and send size + data
-                Buffer.BlockCopy(data, 0, msgBuffer, 4, data.Length);
-                Send(msgBuffer);
+                // create buffer and send
+                EncodeBufferAndSize(data, out msgBuffer);
+                SendRaw(msgBuffer);
             }
             catch (Exception e)
             {
@@ -359,18 +402,9 @@ namespace EzSockets
             byte[] msgBuffer;
             try
             {
-                // to encode message size
-                msgBuffer = new byte[4 + data.Length];
-
-                // could optionally call BitConverter.GetBytes(data.length);
-                msgBuffer[0] = (byte)data.Length;
-                msgBuffer[1] = (byte)(data.Length >> 8);
-                msgBuffer[2] = (byte)(data.Length >> 16);
-                msgBuffer[3] = (byte)(data.Length >> 24);
-
-                // merge and send size + data
-                Buffer.BlockCopy(data, 0, msgBuffer, 4, data.Length);
-                await SendAsync(msgBuffer);
+                // create buffer and send
+                EncodeBufferAndSize(data, out msgBuffer);
+                await SendRawAsync(msgBuffer);
             }
             catch (Exception e)
             {
