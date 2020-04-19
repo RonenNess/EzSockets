@@ -73,7 +73,7 @@ namespace EzSockets
         /// <summary>
         /// Max size, in bytes, for framed messages.
         /// </summary>
-        public static int MaxMessageSize = 1024 * 10;
+        public static int MaxMessageSize = 1024 * 1024;
 
         /// <summary>
         /// Optional data you can attach to this socket.
@@ -541,9 +541,9 @@ namespace EzSockets
                 var messagesize = ReadInt();
 
                 // sanity check
-                if (messagesize > 1024 * 10)
+                if (messagesize > MaxMessageSize)
                 {
-                    throw new Exception("Message buffer too big!");
+                    throw new Exception("Message buffer too big! You can set `EzSocket.MaxMessageSize` to allow bigger buffers.");
                 }
 
                 // no message? usually happens while disconnecting..
@@ -593,7 +593,7 @@ namespace EzSockets
                 // sanity check
                 if (messagesize > MaxMessageSize)
                 {
-                    throw new Exception("Message buffer too big!");
+                    throw new Exception("Message buffer too big! You can set `EzSocket.MaxMessageSize` to allow bigger buffers.");
                 }
 
                 // no message? usually happens while disconnecting..
