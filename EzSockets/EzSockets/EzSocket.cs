@@ -185,6 +185,14 @@ namespace EzSockets
         public virtual void Close()
         {
             // close stream and socket
+            // call event earlier so disconnect event will always be able to make use of the tcpclient before its disposed
+            // invoke event
+            if (!_wasClosedEventCalled)
+            {
+                _eventsListener.OnConnectionClosed(this);
+                _wasClosedEventCalled = true;
+            }
+
             try
             {
                 if (Client.Connected)
@@ -196,13 +204,6 @@ namespace EzSockets
             catch (Exception e)
             {
                 HandleException(e);
-            }
-
-            // invoke event
-            if (!_wasClosedEventCalled)
-            {
-                _eventsListener.OnConnectionClosed(this);
-                _wasClosedEventCalled = true;
             }
         }
 
